@@ -42,4 +42,15 @@ public class Bullet {
         g2d.fillOval((int) x, (int) y,r, 2 * r);
 
     }
+
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+    public int getR() {
+        return r;
+    }
 }

@@ -44,16 +44,15 @@ public class Enemy {
         }
     }
     //Functions
-    public boolean remove{
-        if (health <= 0){
-            return true;
-        }
+    public boolean remove (){
+        if (health <= 0) return true;
         return false;
-
     }
+
     public void hit (){
         health--;
     }
+    
     public void update(){
         x+= dx;
         y+= dy;
@@ -74,5 +73,16 @@ public class Enemy {
         g2d.setStroke(new BasicStroke(1));
 
 
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public double getX() {
+        return x;
+    }
+    public int getR() {
+        return r;
     }
 }
