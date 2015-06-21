@@ -16,6 +16,7 @@ public class Player {
 
 
     private int speed;
+    private int health;
     private Color color1;
     private Color color2;
 
@@ -32,6 +33,7 @@ public class Player {
         r = 5;
 
         speed = 5;
+        health = 3;
 
         dx=0;
         dy=0;
@@ -49,9 +51,15 @@ public class Player {
     public double getX(){
         return x;
     }
+
     public double getY(){
         return y;
     }
+
+    public int getR() {return r; }
+
+    public void hit () {health--; System.out.println(health); }
+
     public void update(){
         if (up && y > r) dy -= speed;
 
@@ -87,4 +95,6 @@ public class Player {
         g2d.setStroke(new BasicStroke(1));
 
     }
+
+
 }

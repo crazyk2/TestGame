@@ -16,10 +16,16 @@ public class GamePanel extends JPanel implements Runnable{
     private BufferedImage image;
     private Graphics2D g2d;
 
+    private int FPS;
+    private int sleepTime;
+    private double millisToFPS;
+    private long timerFPS;
+
     public static GameBack background;
     public static Player player;
     public  static ArrayList<Bullet> bullets;
     public  static ArrayList<Enemy> enemies;
+    public  static Wave wave;
 
     //Constructor
     public GamePanel() {
@@ -41,6 +47,9 @@ public class GamePanel extends JPanel implements Runnable{
     }
 
     public void run () {
+        FPS = 30;
+        millisToFPS = 1000/FPS;
+        sleepTime = 0;
 
         image = new BufferedImage(WIDTH, HEIGHT,BufferedImage.TYPE_INT_RGB );
         g2d = (Graphics2D)image.getGraphics();
@@ -49,24 +58,31 @@ public class GamePanel extends JPanel implements Runnable{
         player = new Player();
         bullets = new ArrayList<Bullet>();
         enemies = new ArrayList<Enemy>();
+        wave = new Wave();
 
-        enemies.add(new Enemy(1,1));
-        enemies.add(new Enemy(1,1));
 
         while (true){
            //TODO States
+            timerFPS = System.nanoTime();
             gameUpdate();
             gameRender();
             gameDraw();
+            timerFPS = (System.nanoTime() - timerFPS)/1000000;
+            if (millisToFPS > timerFPS) {
+                sleepTime =  (int) (  millisToFPS - timerFPS  );
+            }
+            else sleepTime = 1;
 
-          try {
+            try {
 
-              thread.sleep(33); //TODO FPS
+              thread.sleep(sleepTime); //TODO FPS
+                System.out.println(sleepTime);
 
-          } catch (InterruptedException e){
+            } catch (InterruptedException e){
               e.printStackTrace();
-          }
-
+            }
+            timerFPS = 0;
+            sleepTime = 1;
         }
     }
 
@@ -95,33 +111,54 @@ public class GamePanel extends JPanel implements Runnable{
                //i--;
            }
 
-        //Bullets-enemies collide
+        //Bullets-enemies-player collide
+        double px = player.getX();
+        double py = player.getY();
+        double pr = player.getR();
+
         for (int i=0; i < enemies.size(); i++){
             Enemy e= enemies.get(i);
             double ex = e.getX();
             double ey = e.getY();
             int er = e.getR();
 
+           //Player-enemy collide
+            double dx_ep = ex - px;
+            double dy_ep = ey - py;
+            double dist_ep = Math.sqrt(dx_ep * dx_ep + dy_ep * dy_ep);
+            if ( (int) dist_ep <= er + pr) {
+                //e.hit();
+                enemies.remove(i);
+                i--;
+                player.hit();
+                break;
+            }
+
+            //Bullets-enemies collide
             for (int j =0; j< bullets.size(); j ++){
                 Bullet b = bullets.get(j);
                 double bx = b.getX();
                 double by = b.getY();
 
-                double dx = ex - bx;
-                double dy = ey - by;
-                double dist = Math.sqrt(dx * dx + dy * dy);
-                if ( (int) dist < er + b.getR()) {
+                double dx_eb = ex - bx;
+                double dy_eb = ey - by;
+                double dist_eb = Math.sqrt(dx_eb * dx_eb + dy_eb * dy_eb);
+                if ( (int) dist_eb <= er + b.getR()) {
                     e.hit();
                     bullets.remove(j);
-                    break;
+                    j--;
+                    if (e.remove()){
+                        enemies.remove(i);
+                        i--;
+                        break;
+                    }
                 }
-
-            }
-            if (e.remove()){
-                enemies.remove(i);
-                i--;
             }
         }
+
+        //Wave udate
+        wave.update();
+
     }
 
 
@@ -140,6 +177,11 @@ public class GamePanel extends JPanel implements Runnable{
         //Bullets draw
         for (int i = 0; i < enemies.size(); i++) {
             enemies.get(i).draw(g2d);
+        }
+
+        //Wave draw
+        if (wave.showWave()) {
+            wave.draw(g2d);
         }
     }
 
